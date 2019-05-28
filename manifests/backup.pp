@@ -20,7 +20,7 @@ define restic::backup (
   $repo,
   $files,
   $backup_flags = '',
-  $forget_flags = '--prune --keep-weekly 3 --keep-daily 7 --keep-monthly 12',
+  $forget_flags = '--prune --keep-last 7',
   $cron_user    = 'root',
   $cron_hour    = '3',
   $cron_minute  = '0',
