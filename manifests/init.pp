@@ -9,15 +9,21 @@ class restic(
   $checksum      = '08cd75e56a67161e9b16885816f04b2bf1fb5b03bc0677b0ccf3812781c1a2ec',
   $checksum_type = 'sha256',
 ) {
-  archive { "restic_${version}_linux_amd64.bz2":
-    ensure        => present,
-    path          => "/tmp/restic_${version}_linux_amd64.bz2",
-    extract       => true,
-    extract_path  => '/usr/local/bin',
-    source        => "https://github.com/restic/restic/releases/download/v${version}/restic_${version}_linux_amd64.bz2",
-    checksum      => $checksum,
-    checksum_type => $checksum_type,
-    creates       => "/usr/local/bin/restic_${version}_linux_amd64",
-    cleanup       => true,
+  archive { '/tmp/restic.bz2':
+    ensure          => present,
+    extract         => true,
+    extract_path    => '/usr/local/bin',
+    extract_command => 'bunzip2 -c %s > /usr/local/bin/restic',
+    source          => "https://github.com/restic/restic/releases/download/v${version}/restic_${version}_linux_amd64.bz2",
+    checksum        => $checksum,
+    checksum_type   => $checksum_type,
+    cleanup         => true,
+    creates         => '/usr/local/bin/restic',
+  }
+  -> file { '/usr/local/bin/restic':
+    ensure => file,
+    mode   => '0755',
+    owner  => 'root',
+    group  => 'root',
   }
 }
