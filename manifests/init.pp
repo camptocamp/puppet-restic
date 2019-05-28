@@ -27,4 +27,7 @@ class restic(
     owner  => 'root',
     group  => 'root',
   }
+  file { '/var/log/restic':
+    ensure => directory,
+  }
 }
