@@ -5,9 +5,10 @@
 # @example
 #   include restic
 class restic(
-  $version       = '0.9.5',
-  $checksum      = '08cd75e56a67161e9b16885816f04b2bf1fb5b03bc0677b0ccf3812781c1a2ec',
-  $checksum_type = 'sha256',
+  $version             = '0.9.5',
+  $checksum            = '08cd75e56a67161e9b16885816f04b2bf1fb5b03bc0677b0ccf3812781c1a2ec',
+  $checksum_type       = 'sha256',
+  $default_environment = [],
 ) {
   archive { '/tmp/restic.bz2':
     ensure          => present,
