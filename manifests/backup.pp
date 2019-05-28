@@ -27,7 +27,7 @@ define restic::backup (
   $environment  = [],
 ) {
   cron { $title:
-    command     => "restic -r ${repo} stats 2> /dev/null || restic -r ${repo} init && restic -r ${repo} backup ${backup_flags} ${files} && restic -r ${repo} forget ${forget_flags}",
+    command     => "restic -r ${repo} stats 2> /dev/null || restic -r ${repo} init >> /var/log/restic/${title}-$(date +\%F).log && restic -r ${repo} backup ${backup_flags} ${files} >> /var/log/restic/${title}-$(date +\%F).log && restic -r ${repo} forget ${forget_flags} >> /var/log/restic/${title}-$(date +\%F).log",
     user        => $cron_user,
     hour        => $cron_hour,
     minute      => $cron_minute,
