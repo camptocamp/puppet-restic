@@ -11,6 +11,7 @@ class restic(
 ) {
   archive { "restic_${version}_linux_amd64.bz2":
     ensure        => present,
+    path          => "/tmp/restic_${version}_linux_amd64.bz2",
     extract       => true,
     extract_path  => '/usr/local/bin',
     source        => "https://github.com/restic/restic/releases/download/v${version}/restic_${version}_linux_amd64.bz2",
