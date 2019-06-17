@@ -30,4 +30,11 @@ class restic(
   file { '/var/log/restic':
     ensure => directory,
   }
+  file { '/usr/local/bin/restic_backup.sh':
+    ensure  => file,
+    mode    => '0755',
+    owner   => 'root',
+    group   => 'root',
+    content => file("${module_name}/restic_backup.sh"),
+  }
 }
