@@ -37,4 +37,7 @@ class restic(
     group   => 'root',
     content => file("${module_name}/restic_backup.sh"),
   }
+  ensure_packages { ['jq']:
+    ensure => present,
+  }
 }
