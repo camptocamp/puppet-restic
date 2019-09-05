@@ -36,7 +36,7 @@ if test -z "${REPO}" || test -z "${SOURCE}" ; then
 fi
 
 echo Test if the repo exists
-restic --json -r "$REPO" stats
+restic --json --no-lock -r "$REPO" stats
 rc=$?
 
 if [ $rc -ne 0 ]; then
@@ -55,7 +55,7 @@ EOF
   fi
 fi
 
-echo 
+echo
 echo Launch backup
 output=$(restic --json -r "$REPO" backup "$SOURCE")
 rc=$?
