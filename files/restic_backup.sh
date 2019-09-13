@@ -36,7 +36,7 @@ if test -z "${REPO}" || test -z "${SOURCE}" ; then
 fi
 
 echo Test if the repo exists
-restic --json --no-lock -r "$REPO" stats
+restic --json -r "$REPO" snapshots --last > /dev/null
 rc=$?
 
 if [ $rc -ne 0 ]; then
