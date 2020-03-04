@@ -35,6 +35,8 @@ if test -z "${REPO}" || test -z "${SOURCE}" ; then
   exit 1
 fi
 
+PATH="/usr/local/bin:$PATH" # Add restic cmd dir to path (if not set in crontab)
+
 echo Test if the repo exists
 restic --json -r "$REPO" snapshots --last > /dev/null
 rc=$?
