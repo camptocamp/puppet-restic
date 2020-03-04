@@ -20,6 +20,7 @@ class restic(
     checksum_type   => $checksum_type,
     cleanup         => true,
     creates         => '/usr/local/bin/restic',
+    require         => Package['bzip2']
   }
   -> file { '/usr/local/bin/restic':
     ensure => file,
