@@ -2,10 +2,10 @@
 
 push_metrics()
 {
-  echo "$1" | curl -X"$2" --data-binary @- http://127.0.0.1:9091/metrics/job/restic/files/"$(echo "$SOURCE" | tr '/' '_')"
+  echo "$1" | curl -X"$2" --data-binary @- http://127.0.0.1:9091/metrics/job/restic
 }
 
-while getopts ":r:s:f:" opt; do
+while getopts ":r:s:f:b:" opt; do
   case ${opt} in
     r )
       REPO=$OPTARG
@@ -15,6 +15,9 @@ while getopts ":r:s:f:" opt; do
       ;;
     f )
       FORGET_ARGS=$OPTARG
+      ;;
+    b )
+      BACKUP_ARGS=$OPTARG
       ;;
     \? )
       echo "Invalid option: $OPTARG" 1>&2
@@ -31,7 +34,7 @@ shift $((OPTIND -1))
 : "${FORGET_ARGS:="--keep-last 7"}"
 
 if test -z "${REPO}" || test -z "${SOURCE}" ; then
-  echo "Usage: $(basename "$0") -r <repo> -s <source> [-f <forget_args>]" 1>&2
+  echo "Usage: $(basename "$0") -r <repo> -s <source> [-f <forget_args>] [-b <backup_args>]" 1>&2
   exit 1
 fi
 
@@ -59,7 +62,7 @@ fi
 
 echo
 echo Launch backup
-output=$(restic --json -r "$REPO" backup "$SOURCE")
+output=$(restic --json -r "$REPO" backup $SOURCE $BACKUP_ARGS)
 rc=$?
 echo "$output"
 
