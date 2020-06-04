@@ -1,4 +1,4 @@
-# @summary Creates a resic backup cronjob
+# @summary Creates a restic backup cronjob
 #
 # The define allows to create a restic backup cronjob
 #
@@ -28,7 +28,7 @@ define restic::backup (
   $environment  = [],
 ) {
   cron { $title:
-    command     => "/usr/local/bin/restic_backup.sh -r ${repo} -s ${files} -f '${forget_flags}' -b '${backup_flags}' >> /var/log/restic/${title}-$(date +\%F).log",
+    command     => "/usr/local/bin/restic_backup.sh -r ${repo} -s '${files}' -f '${forget_flags}' -b '${backup_flags}' >> /var/log/restic/${title}-$(date +\%F).log",
     ensure      => $ensure,
     user        => $cron_user,
     hour        => $cron_hour,
