@@ -2,10 +2,24 @@
 
 push_metrics()
 {
-  echo "$1" | curl -X"$2" --data-binary @- http://127.0.0.1:9091/metrics/job/restic
+  if [ "$TEXTFILE_COLLECTOR" = true ] ; then
+    # Write out metrics to a temporary file if textfile collecting is enabled
+    echo "$1" >> "$TEXTFILE_COLLECTOR_DIR/restic-snapshot.prom.$$"
+  else
+    # By default send data to the local pushgateway
+    echo "$1" | curl -X"$2" --data-binary @- http://127.0.0.1:9091/metrics/job/restic
+  fi
 }
 
-while getopts ":r:s:f:b:" opt; do
+move_textfile()
+{
+  # Before end of script, move the textfile atomically if enabled (to avoid the exporter seeing half a file)
+  if [ "$TEXTFILE_COLLECTOR" = true ] ; then
+    mv "$TEXTFILE_COLLECTOR_DIR/restic-snapshot.prom.$$" "$TEXTFILE_COLLECTOR_DIR/restic-snapshot.prom"
+  fi
+}
+
+while getopts ":r:s:f:b:t" opt; do
   case ${opt} in
     r )
       REPO=$OPTARG
@@ -18,6 +32,10 @@ while getopts ":r:s:f:b:" opt; do
       ;;
     b )
       BACKUP_ARGS=$OPTARG
+      ;;
+    t )
+      TEXTFILE_COLLECTOR=true
+      TEXTFILE_COLLECTOR_DIR=/var/lib/node_exporter/textfile_collector
       ;;
     \? )
       echo "Invalid option: $OPTARG" 1>&2
@@ -34,7 +52,7 @@ shift $((OPTIND -1))
 : "${FORGET_ARGS:="--keep-last 7"}"
 
 if test -z "${REPO}" || test -z "${SOURCE}" ; then
-  echo "Usage: $(basename "$0") -r <repo> -s <source> [-f <forget_args>] [-b <backup_args>]" 1>&2
+  echo "Usage: $(basename "$0") -r <repo> -s <source> [-f <forget_args>] [-b <backup_args>] [-t]" 1>&2
   exit 1
 fi
 
@@ -56,6 +74,7 @@ if [ $rc -ne 0 ]; then
 restic_init_return_code{repo="$REPO",source="$SOURCE"} $rc
 EOF
     push_metrics "$data" "POST"
+    move_textfile
     exit 1
   fi
 fi
@@ -192,3 +211,5 @@ EOF
 
 # PUT metrics
 push_metrics "$data" "PUT"
+
+move_textfile
