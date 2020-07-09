@@ -19,6 +19,11 @@ move_textfile()
   fi
 }
 
+log()
+{
+  echo "[$(date '+%F %T %Z')] $@"
+}
+
 while getopts ":r:s:f:b:t" opt; do
   case ${opt} in
     r )
@@ -58,17 +63,18 @@ fi
 
 PATH="/usr/local/bin:$PATH" # Add restic cmd dir to path (if not set in crontab)
 
-echo Test if the repo exists
+echo
+log Test if the repo exists
 restic --json -r "$REPO" snapshots --last > /dev/null
 rc=$?
 
 if [ $rc -ne 0 ]; then
-  echo Initialize the repo
+  log Initialize the repo
   restic --json -r "$REPO" init
   rc=$?
 
   if [ $rc -ne 0 ]; then
-    echo Failed to initialize the restic repo 2>&1
+    log Failed to initialize the restic repo 2>&1
     read -r -d '' data <<EOF
 # TYPE restic_init_return_code gauge
 restic_init_return_code{repo="$REPO",source="$SOURCE"} $rc
@@ -80,10 +86,10 @@ EOF
 fi
 
 echo
-echo Launch backup
+log Launch backup
 output=$(restic --json -r "$REPO" backup $SOURCE $BACKUP_ARGS)
 rc=$?
-echo "$output"
+log "$output"
 
 summary=$(echo "$output"|jq 'select(.message_type == "summary")')
 
@@ -133,7 +139,7 @@ EOF
 push_metrics "$data" "POST"
 
 echo
-echo Forget old backups
+log Forget old backups
 # The folling line returns a shellcheck warning, but I could not find a workaround
 # as $FORGET_ARGS must not be quoted.
 restic --json -r "$REPO" forget $FORGET_ARGS
@@ -151,7 +157,7 @@ EOF
 push_metrics "$data" "POST"
 
 echo
-echo Prune old backups
+log Prune old backups
 restic --json -r "$REPO" prune
 rc=$?
 
@@ -167,7 +173,7 @@ EOF
 push_metrics "$data" "POST"
 
 echo
-echo Check after prune
+log Check after prune
 restic --json -r "$REPO" check
 rc=$?
 
@@ -182,7 +188,7 @@ restic_check_last{repo="$REPO",source="$SOURCE"} $(date +%s)
 EOF
 push_metrics "$data" "POST"
 
-echo Push statisitcs as metrics
+log Push statisitcs as metrics
 stats_output=$(restic --json -r "$REPO" stats 2> /dev/null)
 echo "$stats_output"
 
@@ -198,9 +204,9 @@ EOF
 push_metrics "$data" "POST"
 
 echo
-echo Count the number of snapshots after prune
+log Count the number of snapshots after prune
 snapshots_output=$(restic --json -r "$REPO" snapshots)
-echo "$snapshots_output"
+log "$snapshots_output"
 
 read -r -d '' data<<EOF
 $data

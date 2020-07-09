@@ -38,5 +38,12 @@ class restic(
     group   => 'root',
     content => file("${module_name}/restic_backup.sh"),
   }
-  ensure_packages(['bzip2', 'jq'], {'ensure' => 'present'})
+  file { '/etc/logrotate.d/restic':
+    ensure  => file,
+    mode    => '0644',
+    owner   => 'root',
+    group   => 'root',
+    content => file("${module_name}/logrotate.restic"),
+  }
+  ensure_packages(['bzip2', 'jq', 'logrotate'], {'ensure' => 'present'})
 }
