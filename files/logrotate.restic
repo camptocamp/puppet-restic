@@ -1,5 +1,5 @@
 /var/log/restic/*.log {
-    daily
+    weekly
     rotate 4
     compress
     notifempty
