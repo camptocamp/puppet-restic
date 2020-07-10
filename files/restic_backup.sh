@@ -146,7 +146,6 @@ restic --json -r "$REPO" forget $FORGET_ARGS
 rc=$?
 
 read -r -d '' data<<EOF
-$data
 
 # TYPE restic_forget_return_code gauge
 restic_forget_return_code{repo="$REPO",source="$SOURCE"} $rc
@@ -162,7 +161,6 @@ restic --json -r "$REPO" prune
 rc=$?
 
 read -r -d '' data<<EOF
-$data
 
 # TYPE restic_prune_return_code gauge
 restic_prune_return_code{repo="$REPO",source="$SOURCE"} $rc
@@ -178,7 +176,6 @@ restic --json -r "$REPO" check
 rc=$?
 
 read -r -d '' data<<EOF
-$data
 
 # TYPE restic_check_return_code gauge
 restic_check_return_code{repo="$REPO",source="$SOURCE"} $rc
@@ -193,7 +190,6 @@ stats_output=$(restic --json -r "$REPO" stats 2> /dev/null)
 echo "$stats_output"
 
 read -r -d '' data<<EOF
-$data
 
 # TYPE restic_stats_total_size gauge
 restic_stats_total_size{repo="$REPO",source="$SOURCE"} $(echo "$stats_output"|jq '.total_size')
@@ -209,7 +205,6 @@ snapshots_output=$(restic --json -r "$REPO" snapshots)
 log "$snapshots_output"
 
 read -r -d '' data<<EOF
-$data
 
 # TYPE restic_snapshots_total gauge
 restic_snapshots_total{repo="$REPO",source="$SOURCE"} $(echo "$snapshots_output"|jq '. | length')
