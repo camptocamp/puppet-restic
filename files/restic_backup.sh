@@ -144,7 +144,7 @@ $data
 # TYPE restic_forget_return_code gauge
 restic_forget_return_code{repo="$REPO",source="$SOURCE"} $rc
 
-# TYPE restic_last_forget gauge
+# TYPE restic_forget_last gauge
 restic_forget_last{repo="$REPO",source="$SOURCE"} $(date +%s)
 EOF
 push_metrics "$data" "POST"
@@ -160,7 +160,7 @@ $data
 # TYPE restic_prune_return_code gauge
 restic_prune_return_code{repo="$REPO",source="$SOURCE"} $rc
 
-# TYPE restic_last_prune gauge
+# TYPE restic_prune_last gauge
 restic_prune_last{repo="$REPO",source="$SOURCE"} $(date +%s)
 EOF
 push_metrics "$data" "POST"
@@ -176,7 +176,7 @@ $data
 # TYPE restic_check_return_code gauge
 restic_check_return_code{repo="$REPO",source="$SOURCE"} $rc
 
-# TYPE restic_last_check gauge
+# TYPE restic_check_last gauge
 restic_check_last{repo="$REPO",source="$SOURCE"} $(date +%s)
 EOF
 push_metrics "$data" "POST"
