@@ -4,18 +4,12 @@ push_metrics()
 {
   if [ "$TEXTFILE_COLLECTOR" = true ] ; then
     # Write out metrics to a temporary file if textfile collecting is enabled
-    echo "$1" >> "$TEXTFILE_COLLECTOR_DIR/restic-snapshot.prom.$$"
+    echo "$1" > "$TEXTFILE_COLLECTOR_DIR/restic-snapshot.prom.$$"
+    # move the textfile atomically (to avoid the exporter seeing half a file)
+    mv "$TEXTFILE_COLLECTOR_DIR/restic-snapshot.prom.$$" "$TEXTFILE_COLLECTOR_DIR/restic-snapshot.prom"
   else
     # By default send data to the local pushgateway
     echo "$1" | curl -X"$2" --data-binary @- http://127.0.0.1:9091/metrics/job/restic
-  fi
-}
-
-move_textfile()
-{
-  # Before end of script, move the textfile atomically if enabled (to avoid the exporter seeing half a file)
-  if [ "$TEXTFILE_COLLECTOR" = true ] ; then
-    mv "$TEXTFILE_COLLECTOR_DIR/restic-snapshot.prom.$$" "$TEXTFILE_COLLECTOR_DIR/restic-snapshot.prom"
   fi
 }
 
@@ -80,7 +74,6 @@ if [ $rc -ne 0 ]; then
 restic_init_return_code{repo="$REPO",source="$SOURCE"} $rc
 EOF
     push_metrics "$data" "POST"
-    move_textfile
     exit 1
   fi
 fi
@@ -146,6 +139,7 @@ restic --json -r "$REPO" forget $FORGET_ARGS
 rc=$?
 
 read -r -d '' data<<EOF
+$data
 
 # TYPE restic_forget_return_code gauge
 restic_forget_return_code{repo="$REPO",source="$SOURCE"} $rc
@@ -161,6 +155,7 @@ restic --json -r "$REPO" prune
 rc=$?
 
 read -r -d '' data<<EOF
+$data
 
 # TYPE restic_prune_return_code gauge
 restic_prune_return_code{repo="$REPO",source="$SOURCE"} $rc
@@ -176,6 +171,7 @@ restic --json -r "$REPO" check
 rc=$?
 
 read -r -d '' data<<EOF
+$data
 
 # TYPE restic_check_return_code gauge
 restic_check_return_code{repo="$REPO",source="$SOURCE"} $rc
@@ -190,6 +186,7 @@ stats_output=$(restic --json -r "$REPO" stats 2> /dev/null)
 echo "$stats_output"
 
 read -r -d '' data<<EOF
+$data
 
 # TYPE restic_stats_total_size gauge
 restic_stats_total_size{repo="$REPO",source="$SOURCE"} $(echo "$stats_output"|jq '.total_size')
@@ -205,6 +202,7 @@ snapshots_output=$(restic --json -r "$REPO" snapshots)
 log "$snapshots_output"
 
 read -r -d '' data<<EOF
+$data
 
 # TYPE restic_snapshots_total gauge
 restic_snapshots_total{repo="$REPO",source="$SOURCE"} $(echo "$snapshots_output"|jq '. | length')
@@ -213,4 +211,3 @@ EOF
 # PUT metrics
 push_metrics "$data" "PUT"
 
-move_textfile
