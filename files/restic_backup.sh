@@ -181,7 +181,7 @@ restic_check_last{repo="$REPO",source="$SOURCE"} $(date +%s)
 EOF
 push_metrics "$data" "POST"
 
-log Push statisitcs as metrics
+log Push statistics as metrics
 stats_output=$(restic --json -r "$REPO" stats 2> /dev/null)
 echo "$stats_output"
 
@@ -210,4 +210,3 @@ EOF
 
 # PUT metrics
 push_metrics "$data" "PUT"
-
