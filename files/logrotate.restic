@@ -1,0 +1,6 @@
+/var/log/restic/*.log {
+    weekly
+    rotate 4
+    compress
+    notifempty
+}
