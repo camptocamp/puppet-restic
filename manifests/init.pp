@@ -45,5 +45,5 @@ class restic(
     group   => 'root',
     content => file("${module_name}/logrotate.restic"),
   }
-  ensure_packages(['bzip2', 'jq', 'logrotate'], {'ensure' => 'present'})
+  ensure_packages(['bzip2', 'jq'], {'ensure' => 'present'})
 }
