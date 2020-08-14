@@ -58,7 +58,8 @@ fi
 PATH="/usr/local/bin:$PATH" # Add restic cmd dir to path (if not set in crontab)
 
 if [ "$TEXTFILE_COLLECTOR" = true ] ; then
-  rm $TEXTFILE_COLLECTOR_DIR/restic-snapshot* # clean up old textfiles
+  # clean up old textfile
+  rm "$TEXTFILE_COLLECTOR_DIR/restic-snapshot$(echo $SOURCE | tr '/' '_' | tr ' ' '+').prom"
 fi
 
 echo
