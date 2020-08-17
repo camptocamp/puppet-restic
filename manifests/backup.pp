@@ -30,8 +30,8 @@ define restic::backup (
   $environment   = [],
 ) {
   cron { $title:
-    command     => "/usr/local/bin/restic_backup.sh -r ${repo} -s '${files}' -f '${forget_flags}' -b '${backup_flags}' ${textfile_flag} >> /var/log/restic/${title}.log",
     ensure      => $ensure,
+    command     => "/usr/local/bin/restic_backup.sh -r ${repo} -s '${files}' -f '${forget_flags}' -b '${backup_flags}' ${textfile_flag} >> /var/log/restic/${title}.log",
     user        => $cron_user,
     weekday     => $cron_day,
     hour        => $cron_hour,
