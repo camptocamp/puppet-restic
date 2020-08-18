@@ -3,7 +3,8 @@ require 'spec_helper'
 describe 'restic::backup' do
   let(:title) { 'namevar' }
   let(:params) do
-    { 'files' => '/var/backups',
+    {
+      'files' => '/var/backups',
       'repo'  => 's3:s3.amazonaws.com/bucket_backups',
     }
   end
