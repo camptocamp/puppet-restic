@@ -23,6 +23,7 @@ define restic::backup (
   $backup_flags  = '',
   $forget_flags  = '--prune --keep-last 7',
   $textfile_flag = '',
+  $command_flags = '',
   $cron_user     = 'root',
   $cron_day      = '*',
   $cron_hour     = '3',
@@ -31,7 +32,7 @@ define restic::backup (
 ) {
   cron { $title:
     ensure      => $ensure,
-    command     => "/usr/local/bin/restic_backup.sh -r ${repo} -s '${files}' -f '${forget_flags}' -b '${backup_flags}' ${textfile_flag} >> /var/log/restic/${title}.log",
+    command     => "/usr/local/bin/restic_backup.sh -r ${repo} -s '${files}' -f '${forget_flags}' -c '${command_flags}' -b '${backup_flags}' ${textfile_flag} >> /var/log/restic/${title}.log",
     user        => $cron_user,
     weekday     => $cron_day,
     hour        => $cron_hour,

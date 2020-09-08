@@ -18,7 +18,7 @@ log()
   echo "[$(date '+%F %T %Z')] $@"
 }
 
-while getopts ":r:s:f:b:t" opt; do
+while getopts ":r:s:f:c:b:t" opt; do
   case ${opt} in
     r )
       REPO=$OPTARG
@@ -28,6 +28,9 @@ while getopts ":r:s:f:b:t" opt; do
       ;;
     f )
       FORGET_ARGS=$OPTARG
+      ;;
+    c )
+      COMMAND_ARGS=$OPTARG
       ;;
     b )
       BACKUP_ARGS=$OPTARG
@@ -64,12 +67,12 @@ fi
 
 echo
 log Test if the repo exists
-restic --json -r "$REPO" snapshots --last > /dev/null
+restic $COMMAND_ARGS --json -r "$REPO" snapshots --last > /dev/null
 rc=$?
 
 if [ $rc -ne 0 ]; then
   log Initialize the repo
-  restic --json -r "$REPO" init
+  restic $COMMAND_ARGS --json -r "$REPO" init
   rc=$?
 
   if [ $rc -ne 0 ]; then
@@ -86,11 +89,11 @@ fi
 
 echo
 log Launch backup
-output=$(restic --json -r "$REPO" backup $SOURCE $BACKUP_ARGS)
+output=$(restic $COMMAND_ARGS --json -r "$REPO" backup $SOURCE $BACKUP_ARGS)
 rc=$?
 log "$output"
 
-summary=$(echo "$output"|jq 'select(.message_type == "summary")')
+summary=$(echo "$output"|jq -s 'map(select(.message_type == "summary"))[0]')
 
 read -r -d '' data<<EOF
 # HELP restic_backup_return_code Return code of restic backup command
@@ -155,7 +158,7 @@ echo
 log Forget old backups
 # The folling line returns a shellcheck warning, but I could not find a workaround
 # as $FORGET_ARGS must not be quoted.
-restic --json -r "$REPO" forget $FORGET_ARGS
+restic $COMMAND_ARGS --json -r "$REPO" forget $FORGET_ARGS
 rc=$?
 
 read -r -d '' data<<EOF
@@ -173,7 +176,7 @@ push_metrics "$data" "POST"
 
 echo
 log Prune old backups
-restic --json -r "$REPO" prune
+restic $COMMAND_ARGS --json -r "$REPO" prune
 rc=$?
 
 read -r -d '' data<<EOF
@@ -191,7 +194,7 @@ push_metrics "$data" "POST"
 
 echo
 log Check after prune
-restic --json -r "$REPO" check
+restic $COMMAND_ARGS --json -r "$REPO" check
 rc=$?
 
 read -r -d '' data<<EOF
@@ -208,7 +211,7 @@ EOF
 push_metrics "$data" "POST"
 
 log Push statistics as metrics
-stats_output=$(restic --json -r "$REPO" stats 2> /dev/null)
+stats_output=$(restic $COMMAND_ARGS --json -r "$REPO" stats 2> /dev/null)
 echo "$stats_output"
 
 read -r -d '' data<<EOF
@@ -226,7 +229,7 @@ push_metrics "$data" "POST"
 
 echo
 log Count the number of snapshots after prune
-snapshots_output=$(restic --json -r "$REPO" snapshots)
+snapshots_output=$(restic $COMMAND_ARGS --json -r "$REPO" snapshots)
 log "$snapshots_output"
 
 read -r -d '' data<<EOF
