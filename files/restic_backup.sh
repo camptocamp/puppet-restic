@@ -90,7 +90,7 @@ output=$(restic --json -r "$REPO" backup $SOURCE $BACKUP_ARGS)
 rc=$?
 log "$output"
 
-summary=$(echo "$output"|jq 'select(.message_type == "summary")')
+summary=$(echo "$output"|jq -s 'map(select(.message_type == "summary"))[0]')
 
 read -r -d '' data<<EOF
 # HELP restic_backup_return_code Return code of restic backup command
