@@ -1,0 +1,22 @@
+[Unit]
+Description=Rest Server
+After=syslog.target
+After=network.target
+
+[Service]
+Type=simple
+User=<%= @user %>
+Group=<%= @group %>
+ExecStart=<%= @bin_dir %>/rest-server --path <%= @backups_path %> <%= @server_parameters %>
+Restart=always
+RestartSec=5
+
+# Optional security enhancements
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=<%= @backups_path %>
+
+[Install]
+WantedBy=multi-user.target
