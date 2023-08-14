@@ -2,9 +2,22 @@
 #
 # This class will install restic on the node
 #
-# @example
-#   include restic
-class restic(
+# @example Installing restic
+#   class { 'restic': }
+#
+# @param version
+#   The version of restic to install
+# @param checksum
+#   The checksum of the restic archive
+# @param checksum_type
+#   The type of checksum to use
+# @param default_environment
+#   The default environment to use
+# @param install_path
+#   The path to install restic to
+# @param bin_path
+#   The path to install the restic binary to
+class restic (
   String $version                    = '0.9.5',
   String $checksum                   = '08cd75e56a67161e9b16885816f04b2bf1fb5b03bc0677b0ccf3812781c1a2ec',
   String $checksum_type              = 'sha256',
@@ -12,7 +25,6 @@ class restic(
   Stdlib::AbsolutePath $install_path = '/opt/restic',
   Stdlib::AbsolutePath $bin_path     = '/usr/local/bin',
 ) {
-
   file { $install_path:
     ensure => directory,
     mode   => '0755',
@@ -58,5 +70,5 @@ class restic(
     group   => 'root',
     content => file("${module_name}/logrotate.restic"),
   }
-  ensure_packages(['bzip2', 'jq'], {'ensure' => 'present'})
+  ensure_packages(['bzip2', 'jq'], { 'ensure' => 'present' })
 }
