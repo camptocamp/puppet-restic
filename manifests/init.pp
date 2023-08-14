@@ -5,28 +5,41 @@
 # @example
 #   include restic
 class restic(
-  $version             = '0.9.5',
-  $checksum            = '08cd75e56a67161e9b16885816f04b2bf1fb5b03bc0677b0ccf3812781c1a2ec',
-  $checksum_type       = 'sha256',
-  $default_environment = [],
+  String $version                    = '0.9.5',
+  String $checksum                   = '08cd75e56a67161e9b16885816f04b2bf1fb5b03bc0677b0ccf3812781c1a2ec',
+  String $checksum_type              = 'sha256',
+  Array[String] $default_environment = [],
+  Stdlib::AbsolutePath $install_path = '/opt/restic',
+  Stdlib::AbsolutePath $bin_path     = '/usr/local/bin',
 ) {
-  archive { '/tmp/restic.bz2':
+
+  file { $install_path:
+    ensure => directory,
+    mode   => '0755',
+    owner  => 'root',
+    group  => 'root',
+  }
+  -> archive { '/tmp/restic.bz2':
     ensure          => present,
     extract         => true,
-    extract_path    => '/usr/local/bin',
-    extract_command => 'bunzip2 -c %s > /usr/local/bin/restic',
+    extract_path    => $install_path,
+    extract_command => "bunzip2 -c %s > ${install_path}/restic-${version}",
     source          => "https://github.com/restic/restic/releases/download/v${version}/restic_${version}_linux_amd64.bz2",
     checksum        => $checksum,
     checksum_type   => $checksum_type,
     cleanup         => true,
-    creates         => '/usr/local/bin/restic',
+    creates         => "${install_path}/restic-${version}",
     require         => Package['bzip2'],
   }
-  -> file { '/usr/local/bin/restic':
+  -> file { "${install_path}/restic-${version}":
     ensure => file,
     mode   => '0755',
     owner  => 'root',
     group  => 'root',
+  }
+  -> file { "${bin_path}/restic":
+    ensure => link,
+    target => "${install_path}/restic-${version}",
   }
   file { '/var/log/restic':
     ensure => directory,
