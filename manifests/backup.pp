@@ -16,19 +16,44 @@
 #     files        = '/',
 #     backup_flags = '--exclude /dev --exclude /proc'
 #   }
+
+# @param ensure
+#   Whether the cronjob should be present or absent
+# @param repo
+#   The restic repository to use
+# @param files
+#   The files to backup
+# @param backup_flags
+#   Additional flags to pass to the backup command
+# @param forget_flags
+#   Additional flags to pass to the forget flag (default: --prune --keep-last 7)
+# @param textfile_flag
+#   Additional flags to pass to the textfile flag
+# @param command_flags
+#   Additional flags to pass to the command flag
+# @param cron_user
+#   The user to run the cronjob as
+# @param cron_day
+#   The day to run the cronjob on (default: *)
+# @param cron_hour
+#   The hour to run the cronjob on (default: 3)
+# @param cron_minute
+#   The minute to run the cronjob on (default: 0)
+# @param environment
+#   Additional environment variables to set for the cronjob
 define restic::backup (
-  $repo,
-  $files,
-  $ensure        = 'present',
-  $backup_flags  = '',
-  $forget_flags  = '--prune --keep-last 7',
-  $textfile_flag = '',
-  $command_flags = '',
-  $cron_user     = 'root',
-  $cron_day      = '*',
-  $cron_hour     = '3',
-  $cron_minute   = '0',
-  $environment   = [],
+  String $repo,
+  String $files,
+  String $ensure                       = 'present',
+  Optional[String] $backup_flags       = undef,
+  String $forget_flags                 = '--prune --keep-last 7',
+  Optional[String] $textfile_flag      = undef,
+  Optional[String] $command_flags      = undef,
+  String $cron_user                    = 'root',
+  Variant[String,Integer] $cron_day    = '*',
+  Variant[String,Integer] $cron_hour   = '3',
+  Variant[String,Integer] $cron_minute = '0',
+  Array  $environment                  = [],
 ) {
   cron { $title:
     ensure      => $ensure,
