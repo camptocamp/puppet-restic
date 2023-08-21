@@ -93,6 +93,16 @@ output=$(restic $COMMAND_ARGS --json -r "$REPO" backup $SOURCE $BACKUP_ARGS)
 rc=$?
 log "$output"
 
+if [ $rc -ne 0 ]; then
+    read -r -d '' data <<EOF
+# HELP restic_backup_return_code Return code of restic backup command
+# TYPE restic_backup_return_code gauge
+restic_backup_return_code{repo="$REPO",source="$SOURCE"} $rc
+EOF
+    push_metrics "$data" "POST"
+    exit 1
+fi
+
 summary=$(echo "$output"|jq -s 'map(select(.message_type == "summary"))[0]')
 
 read -r -d '' data<<EOF
