@@ -42,7 +42,7 @@
 # @param environment
 #   Additional environment variables to set for the cronjob
 define restic::backup (
-  String $repo,
+  Variant[String,Sensitive[String]] $repo,
   String $files,
   String $ensure                       = 'present',
   Optional[String] $backup_flags       = undef,
@@ -53,15 +53,28 @@ define restic::backup (
   Variant[String,Integer] $cron_day    = '*',
   Variant[String,Integer] $cron_hour   = '3',
   Variant[String,Integer] $cron_minute = '0',
-  Array  $environment                  = [],
+  Hash[String,String]  $environment    = {},
 ) {
+  file { "${restic::bin_path}/backup.sh":
+    content => stdlib::deferrable_epp("${module_name}/backup.sh.epp",
+      {
+        'repo'          => $repo,
+        'files'         => $files,
+        'forget_flags'  => $forget_flags,
+        'command_flags' => $command_flags,
+        'textfile_flag' => $textfile_flag,
+        'backup_flags'  => $backup_flags,
+        'title'         => $title,
+        'environment'   => $restic::default_environment + $environment,
+      },
+    ),
+  }
   cron { $title:
-    ensure      => $ensure,
-    command     => "/usr/local/bin/restic_backup.sh -r ${repo} -s '${files}' -f '${forget_flags}' -c '${command_flags}' -b '${backup_flags}' ${textfile_flag} >> /var/log/restic/${title}.log",
-    user        => $cron_user,
-    weekday     => $cron_day,
-    hour        => $cron_hour,
-    minute      => $cron_minute,
-    environment => concat($restic::default_environment, $environment),
+    ensure  => $ensure,
+    command => "${restic::bin_path}/backup.sh",
+    user    => $cron_user,
+    weekday => $cron_day,
+    hour    => $cron_hour,
+    minute  => $cron_minute,
   }
 }

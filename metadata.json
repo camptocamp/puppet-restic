@@ -1,6 +1,6 @@
 {
   "name": "camptocamp-restic",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Camptocamp",
   "summary": "",
   "license": "Apache-2.0",
@@ -8,7 +8,11 @@
   "dependencies": [
     {
       "name": "puppet-archive",
-      "version_requirement": ">= 3.0.0 < 4.0.0"
+      "version_requirement": ">= 3.0.0"
+    },
+    {
+      "name": "puppetlabs-stdlib",
+      "version_requirement": ">= 9.0.0"
     }
   ],
   "operatingsystem_support": [
@@ -19,33 +23,17 @@
       ]
     },
     {
-      "operatingsystem": "OracleLinux",
-      "operatingsystemrelease": [
-        "7"
-      ]
-    },
-    {
       "operatingsystem": "RedHat",
       "operatingsystemrelease": [
-        "7"
-      ]
-    },
-    {
-      "operatingsystem": "Scientific",
-      "operatingsystemrelease": [
-        "7"
+        "7",
+        "8",
+        "9"
       ]
     },
     {
       "operatingsystem": "Debian",
       "operatingsystemrelease": [
         "8"
-      ]
-    },
-    {
-      "operatingsystem": "Ubuntu",
-      "operatingsystemrelease": [
-        "16.04"
       ]
     }
   ],

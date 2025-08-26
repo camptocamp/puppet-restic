@@ -18,10 +18,10 @@
 # @param bin_path
 #   The path to install the restic binary to
 class restic (
-  String $version                    = '0.9.5',
-  String $checksum                   = '08cd75e56a67161e9b16885816f04b2bf1fb5b03bc0677b0ccf3812781c1a2ec',
+  String $version                    = '0.18.0',
+  String $checksum                   = '98f6dd8bf5b59058d04bfd8dab58e196cc2a680666ccee90275a3b722374438e',
   String $checksum_type              = 'sha256',
-  Array[String] $default_environment = [],
+  Variant[Hash[String,String],Hash[String,Deferred]] $default_environment = {},
   Stdlib::AbsolutePath $install_path = '/opt/restic',
   Stdlib::AbsolutePath $bin_path     = '/usr/local/bin',
 ) {

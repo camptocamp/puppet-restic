@@ -1,0 +1,4 @@
+<% $environment.each |$k,$v| { -%>
+<%= $k %>='<%= $v %>'
+<% } %>
+/usr/local/bin/restic_backup.sh -r '<%= $repo %>' -s "<%= $files %>" -f "<%= $forget_flags %>" -c "<%= $command_flags %>" -b "<%= $backup_flags %>" <%= $textfile_flag %> >> /var/log/restic/<%= $title %>.log
