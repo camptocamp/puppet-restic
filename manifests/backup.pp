@@ -56,6 +56,7 @@ define restic::backup (
   Hash[String,String]  $environment    = {},
 ) {
   file { "${restic::bin_path}/backup.sh":
+    mode    => '0755',
     content => stdlib::deferrable_epp("${module_name}/backup.sh.epp",
       {
         'repo'          => $repo,

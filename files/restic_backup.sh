@@ -65,18 +65,21 @@ if [ "$TEXTFILE_COLLECTOR" = true ] ; then
   rm "$TEXTFILE_COLLECTOR_DIR/restic-snapshot$(echo $SOURCE | tr '/' '_' | tr ' ' '+').prom"
 fi
 
-echo
-log Test if the repo exists
-restic $COMMAND_ARGS --json -r "$REPO" snapshots --last > /dev/null
+log "Test if the repo exists"
+restic $COMMAND_ARGS --json -r "$REPO" check > /dev/null
 rc=$?
 
-if [ $rc -ne 0 ]; then
-  log Initialize the repo
+if [ $rc -eq 0 ]; then
+  # Repo exists and is accessible
+  log "Restic repository exists and is accessible"
+
+elif [ $rc -eq 10 ]; then
+  # Repo does not exist → initialize
+  log "Repository does not exist – initializing"
   restic $COMMAND_ARGS --json -r "$REPO" init
   rc=$?
-
   if [ $rc -ne 0 ]; then
-    log Failed to initialize the restic repo 2>&1
+    log "Failed to initialize the restic repo"
     read -r -d '' data <<EOF
 # HELP restic_init_return_code Return code of restic init command
 # TYPE restic_init_return_code gauge
@@ -85,10 +88,43 @@ EOF
     push_metrics "$data" "POST"
     exit 1
   fi
+
+elif [ $rc -eq 11 ]; then
+  # Repo locked → unlock it
+  log "Repository is locked – attempting to unlock"
+  restic $COMMAND_ARGS --json -r "$REPO" unlock
+  rc=$?
+  if [ $rc -ne 0 ]; then
+    log "Failed to unlock the restic repo"
+    read -r -d '' data <<EOF
+# HELP restic_unlock_return_code Return code of restic unlock command
+# TYPE restic_unlock_return_code gauge
+restic_unlock_return_code{repo="$REPO",source="$SOURCE"} $rc
+EOF
+    push_metrics "$data" "POST"
+    exit 1
+  fi
+
+elif [ $rc -eq 12 ]; then
+  # Wrong password → fatal
+  log "Incorrect password for the restic repository"
+  read -r -d '' data <<EOF
+# HELP restic_password_error Return code of restic password error
+# TYPE restic_password_error gauge
+restic_password_error{repo="$REPO",source="$SOURCE"} $rc
+EOF
+  push_metrics "$data" "POST"
+  exit 1
+
+else
+  # Generic or unknown error
+  log "Restic returned an unknown error (exit code $rc)"
+  exit 1
 fi
 
+
 echo
-log Launch backup
+log "Launch backup"
 output=$(restic $COMMAND_ARGS --json -r "$REPO" backup $SOURCE $BACKUP_ARGS)
 rc=$?
 log "$output"
@@ -165,7 +201,7 @@ EOF
 push_metrics "$data" "POST"
 
 echo
-log Forget old backups
+log "Forget old backups"
 # The folling line returns a shellcheck warning, but I could not find a workaround
 # as $FORGET_ARGS must not be quoted.
 restic $COMMAND_ARGS --json -r "$REPO" forget $FORGET_ARGS
@@ -185,7 +221,7 @@ EOF
 push_metrics "$data" "POST"
 
 echo
-log Prune old backups
+log "Prune old backups"
 restic $COMMAND_ARGS --json -r "$REPO" prune
 rc=$?
 
@@ -203,7 +239,7 @@ EOF
 push_metrics "$data" "POST"
 
 echo
-log Check after prune
+log "Check after prune"
 restic $COMMAND_ARGS --json -r "$REPO" check
 rc=$?
 
@@ -220,7 +256,7 @@ restic_check_last{repo="$REPO",source="$SOURCE"} $(date +%s)
 EOF
 push_metrics "$data" "POST"
 
-log Push statistics as metrics
+log "Push statistics as metrics"
 stats_output=$(restic $COMMAND_ARGS --json -r "$REPO" stats 2> /dev/null)
 echo "$stats_output"
 
@@ -238,7 +274,7 @@ EOF
 push_metrics "$data" "POST"
 
 echo
-log Count the number of snapshots after prune
+log "Count the number of snapshots after prune"
 snapshots_output=$(restic $COMMAND_ARGS --json -r "$REPO" snapshots)
 log "$snapshots_output"
 
