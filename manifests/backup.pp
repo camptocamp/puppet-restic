@@ -55,20 +55,38 @@ define restic::backup (
   Variant[String,Integer] $cron_minute = '0',
   Hash[String,String]  $environment    = {},
 ) {
-  file { "${restic::bin_path}/backup.sh":
-    mode    => '0755',
-    content => stdlib::deferrable_epp("${module_name}/backup.sh.epp",
-      {
-        'repo'          => $repo,
-        'files'         => $files,
-        'forget_flags'  => $forget_flags,
-        'command_flags' => $command_flags,
-        'textfile_flag' => $textfile_flag,
-        'backup_flags'  => $backup_flags,
-        'title'         => $title,
-        'environment'   => $restic::default_environment + $environment,
-      },
-    ),
+  if $repo =~ Sensitive {
+    file { "${restic::bin_path}/backup.sh":
+      mode    => '0755',
+      content => stdlib::deferrable_epp("${module_name}/backup.sh.epp",
+        {
+          'repo'          => $repo,
+          'files'         => $files,
+          'forget_flags'  => $forget_flags,
+          'command_flags' => $command_flags,
+          'textfile_flag' => $textfile_flag,
+          'backup_flags'  => $backup_flags,
+          'title'         => $title,
+          'environment'   => $restic::default_environment + $environment,
+        },
+      ),
+    }
+  } else {
+    file { "${restic::bin_path}/backup.sh":
+      mode    => '0755',
+      content => epp("${module_name}/backup.sh.epp",
+        {
+          'repo'          => $repo,
+          'files'         => $files,
+          'forget_flags'  => $forget_flags,
+          'command_flags' => $command_flags,
+          'textfile_flag' => $textfile_flag,
+          'backup_flags'  => $backup_flags,
+          'title'         => $title,
+          'environment'   => $restic::default_environment + $environment,
+        },
+      ),
+    }
   }
   cron { $title:
     ensure  => $ensure,
